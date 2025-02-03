@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            flex-grow: 1;
+        }
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            min-width: 100px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        button.recording {
+            background-color: #dc3545;
+        }
+        #transcript {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: white;
+        }
+        .partial {
+            color: #666;
+            font-style: italic;
+        }
+        .final {
+            color: #000;
+            margin-bottom: 10px;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .recording-indicator {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .recording-indicator.active {
+            display: flex;
+        }
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Speech to Text</h1>
+        <div class="controls">
+            <select id="audioDevices">
+                <option value="">Loading devices...</option>
+            </select>
+            <button id="recordButton">Start Recording</button>
+            <button id="copyButton">Copy Transcript</button>
+            <div class="recording-indicator">
+                <div class="recording-dot"></div>
+                Recording...
+            </div>
+        </div>
+        <div id="transcript"></div>
+        <div id="status" class="disconnected">Disconnected</div>
+    </div>
+
+    <script>
+        let ws;
+        let isRecording = false;
+        const transcript = document.getElementById('transcript');
+        const audioDevices = document.getElementById('audioDevices');
+        const copyButton = document.getElementById('copyButton');
+        const recordButton = document.getElementById('recordButton');
+        const status = document.getElementById('status');
+        const recordingIndicator = document.querySelector('.recording-indicator');
+
+        async function loadAudioDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const inputs = devices.filter(device => device.kind === 'audioinput');
+                audioDevices.innerHTML = inputs.map(device => 
+                    `<option value="${device.deviceId}">${device.label || 'Microphone ' + device.deviceId}</option>`
+                ).join('');
+            } catch (err) {
+                console.error('Error loading audio devices:', err);
+            }
+        }
+
+        function connectWebSocket() {
+            ws = new WebSocket('ws://' + window.location.hostname + ':3030/ws');
+            
+            ws.onopen = () => {
+                status.textContent = 'Connected';
+                status.className = 'connected';
+                recordButton.disabled = false;
+            };
+
+            ws.onclose = () => {
+                status.textContent = 'Disconnected';
+                status.className = 'disconnected';
+                recordButton.disabled = true;
+                setTimeout(connectWebSocket, 1000);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'partial') {
+                    updatePartialTranscript(data.text);
+                } else if (data.type === 'final') {
+                    addFinalTranscript(data.text);
+                }
+            };
+        }
+
+        function updatePartialTranscript(text) {
+            if (!text.trim()) return;
+            const partialElem = document.querySelector('.partial');
+            if (partialElem) {
+                partialElem.textContent = text;
+            } else {
+                const div = document.createElement('div');
+                div.className = 'partial';
+                div.textContent = text;
+                transcript.appendChild(div);
+            }
+            transcript.scrollTop = transcript.scrollHeight;
+        }
+
+        function addFinalTranscript(text) {
+            if (!text.trim()) return;
+            const partialElem = document.querySelector('.partial');
+            if (partialElem) {
+                partialElem.remove();
+            }
+            const div = document.createElement('div');
+            div.className = 'final';
+            div.textContent = text;
+            transcript.appendChild(div);
+            transcript.scrollTop = transcript.scrollHeight;
+        }
+
+        recordButton.addEventListener('click', () => {
+            isRecording = !isRecording;
+            if (isRecording) {
+                recordButton.textContent = 'Stop Recording';
+                recordButton.classList.add('recording');
+                recordingIndicator.classList.add('active');
+            } else {
+                recordButton.textContent = 'Start Recording';
+                recordButton.classList.remove('recording');
+                recordingIndicator.classList.remove('active');
+            }
+            
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'recording_state',
+                    isRecording: isRecording
+                }));
+            }
+        });
+
+        copyButton.addEventListener('click', () => {
+            const text = Array.from(transcript.querySelectorAll('.final'))
+                .map(div => div.textContent)
+                .join('\n');
+            navigator.clipboard.writeText(text);
+        });
+
+        audioDevices.addEventListener('change', (e) => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'device_change',
+                    deviceId: e.target.value
+                }));
+            }
+        });
+
+        // Request microphone permission and load devices
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                stream.getTracks().forEach(track => track.stop());
+                loadAudioDevices();
+            })
+            .catch(err => console.error('Error accessing microphone:', err));
+
+        recordButton.disabled = true;
+        connectWebSocket();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,19 @@
+# Rust build artifacts
+/target/
+
+# Vosk model files (optional - depending on if you want to include them in repo)
+/model/*
+!/model/.gitkeep
+
+# IDE specific files
+.vscode/
+.idea/
+*.iml
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Debug files
+*.pdb
+*.log
