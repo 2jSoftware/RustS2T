@@ -1,3 +1,3 @@
 // A stub definition for AudioFrame.
-// Update this with your actual audio frame representation.
+// Will be updated in the future with actual audio frame representation.
 pub struct AudioFrame; 
