@@ -17,3 +17,10 @@ Thumbs.db
 # Debug files
 *.pdb
 *.log
+
+#vosk
+*.lib
+*.dll
+/vosk-win64-0.3.45/
+vosk-win64-0.3.45/
+vosk-win64*
