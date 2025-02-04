@@ -18,6 +18,12 @@ struct TranscriptMessage {
     text: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct AmplitudeMessage {
+    r#type: String,
+    amplitude: f32,
+}
+
 #[derive(Debug, Deserialize)]
 struct ClientMessage {
     r#type: String,
@@ -142,8 +148,14 @@ fn process_audio(
             return;
         }
 
-        // Debug: Check if we're receiving audio data
         let max_amplitude = data.iter().fold(0.0f32, |max, &sample| max.max(sample.abs()));
+        // Send amplitude update to client for UI display
+        {
+            let amplitude_msg = AmplitudeMessage { r#type: "amplitude".to_string(), amplitude: max_amplitude };
+            let amplitude_json = serde_json::to_string(&amplitude_msg).unwrap();
+            let _ = tx.send(amplitude_json);
+        }
+
         if max_amplitude > 0.01 {
             println!("Receiving audio: max amplitude = {}", max_amplitude);
         }
