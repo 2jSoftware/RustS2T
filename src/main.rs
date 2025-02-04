@@ -11,6 +11,8 @@ use tokio::sync::mpsc;
 mod audio;
 mod speech_recognition;
 use speech_recognition::SpeechRecognizer; // Import from the declared module
+use rustfft::FftPlanner;
+use rustfft::num_complex::Complex;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct TranscriptMessage {
@@ -22,6 +24,12 @@ struct TranscriptMessage {
 struct AmplitudeMessage {
     r#type: String,
     amplitude: f32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SpectrogramMessage {
+    r#type: String,
+    bins: Vec<f32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -211,6 +219,37 @@ fn process_audio(
                     *sample /= max_val;
                 }
             }
+
+            // ---- Compute spectrogram data using FFT ----
+            {
+                let fft_len = state.resampled_buffer.len();
+                let mut planner = FftPlanner::new();
+                let fft = planner.plan_fft(fft_len, rustfft::FftDirection::Forward);
+                let mut buffer: Vec<Complex<f32>> = state.resampled_buffer.iter()
+                    .map(|&x| Complex { re: x, im: 0.0 })
+                    .collect();
+                fft.process(&mut buffer);
+                // Take the first half of FFT result and compute magnitudes
+                let half_size = fft_len / 2;
+                let mut magnitudes: Vec<f32> = buffer[..half_size]
+                    .iter()
+                    .map(|c| c.norm())
+                    .collect();
+                // Downsample magnitudes to a fixed number of bins, e.g., 100 bins
+                let bins_target = 100;
+                let chunk_size = half_size / bins_target;
+                let mut downsampled: Vec<f32> = Vec::with_capacity(bins_target);
+                for b in 0..bins_target {
+                    let start = b * chunk_size;
+                    let end = start + chunk_size;
+                    let avg = magnitudes[start..end].iter().copied().sum::<f32>() / chunk_size as f32;
+                    downsampled.push(avg);
+                }
+                let spect_msg = SpectrogramMessage { r#type: "spectrogram".to_string(), bins: downsampled };
+                let spect_json = serde_json::to_string(&spect_msg).unwrap();
+                let _ = tx.send(spect_json);
+            }
+            // ---- End spectrogram computation ----
 
             // Convert to i16 samples
             let samples: Vec<i16> = state.resampled_buffer

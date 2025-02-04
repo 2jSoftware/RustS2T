@@ -128,6 +128,7 @@
         </div>
         <div id="transcript"></div>
         <div id="amplitude-display" style="margin-top: 10px; padding: 5px; background-color: #eee; border: 1px solid #ccc;">Amplitude: 0.0</div>
+        <canvas id="spectrogram-canvas" width="600" height="200" style="margin-top: 10px; border: 1px solid #ccc;"></canvas>
         <div id="status" class="disconnected">Disconnected</div>
     </div>
 
@@ -142,6 +143,9 @@
         const status = document.getElementById('status');
         const recordingIndicator = document.querySelector('.recording-indicator');
         const amplitudeDisplay = document.getElementById('amplitude-display');
+        const spectrogramCanvas = document.getElementById('spectrogram-canvas');
+        const spectCtx = spectrogramCanvas.getContext('2d');
+        let currentRow = 0;
 
         // Add refresh button functionality
         refreshButton.addEventListener('click', () => {
@@ -184,6 +188,8 @@
                     addFinalTranscript(data.text);
                 } else if (data.type === 'amplitude') {
                     amplitudeDisplay.textContent = 'Amplitude: ' + data.amplitude;
+                } else if (data.type === 'spectrogram') {
+                    updateSpectrogram(data.bins);
                 }
             };
         }
@@ -261,6 +267,23 @@
 
         recordButton.disabled = true;
         connectWebSocket();
+
+        // Add this function to update the spectrogram canvas
+        function updateSpectrogram(bins) {
+            const binWidth = spectrogramCanvas.width / bins.length;
+            for (let i = 0; i < bins.length; i++) {
+                // Map the bin value to an intensity (adjust scaling factor as needed)
+                let intensity = Math.min(255, Math.round(bins[i] * 255));
+                spectCtx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+                spectCtx.fillRect(i * binWidth, currentRow, binWidth, 1);
+            }
+            currentRow++;
+            if (currentRow >= spectrogramCanvas.height) {
+                // Reset the canvas by clearing it and starting over at the top
+                currentRow = 0;
+                spectCtx.clearRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+            }
+        }
     </script>
 </body>
 </html> 
