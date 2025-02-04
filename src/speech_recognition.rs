@@ -6,7 +6,7 @@ use tracing::{error, debug};
 
 pub struct SpeechRecognizer {
     sender: Sender<String>,
-    // ... other fields (e.g., audio engine, microphone handle, etc.)
+    // other fields (e.g., audio engine, microphone handle, etc.) *future implementations*
 }
 
 impl SpeechRecognizer {
@@ -14,7 +14,7 @@ impl SpeechRecognizer {
     pub fn new(sender: Sender<String>) -> Self {
         Self {
             sender,
-            // ... initialize additional fields
+            // initialize additional fields *future implementation*
         }
     }
 
@@ -43,14 +43,14 @@ impl SpeechRecognizer {
 
     // Async function to simulate reading an audio frame (replace with your real implementation)
     async fn read_audio_frame(&mut self) -> AudioFrame {
-        // ... actual audio frame retrieval code goes here.
+        // *future* audio frame retrieval code goes here.
         // For example, using an async audio library followed by proper error handling.
         unimplemented!()
     }
 
     // Function to perform speech-to-text recognition (replace with actual engine call)
     fn recognize(&self, _frame: AudioFrame) -> String {
-        // ... actual STT logic.
+        // *future* STT logic.
         // This might call into a deep learning model or external library.
         unimplemented!()
     }
