@@ -29,7 +29,7 @@ cargo build --release
 
 3. Download Vosk model:
    - Get the small English model from [Vosk Models](https://alphacephei.com/vosk/models)
-   - Extract to `model/vosk-model-small-en-us-0.15/`
+   - Create a 'model' directory and extract to `model/vosk-model-small-en-us-0.15/`
 
 4. Run the application:
 ```bash
