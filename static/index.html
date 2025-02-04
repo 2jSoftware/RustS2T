@@ -52,6 +52,12 @@
         button.recording {
             background-color: #dc3545;
         }
+        button#refreshButton {
+            background-color: #E39B4B;  /* Dull orange color */
+        }
+        button#refreshButton:hover {
+            background-color: #C88339;  /* Darker shade for hover */
+        }
         #transcript {
             height: 400px;
             overflow-y: auto;
@@ -114,6 +120,7 @@
             </select>
             <button id="recordButton">Start Recording</button>
             <button id="copyButton">Copy Transcript</button>
+            <button id="refreshButton">Clear Chat</button>
             <div class="recording-indicator">
                 <div class="recording-dot"></div>
                 Recording...
@@ -130,8 +137,14 @@
         const audioDevices = document.getElementById('audioDevices');
         const copyButton = document.getElementById('copyButton');
         const recordButton = document.getElementById('recordButton');
+        const refreshButton = document.getElementById('refreshButton');
         const status = document.getElementById('status');
         const recordingIndicator = document.querySelector('.recording-indicator');
+
+        // Add refresh button functionality
+        refreshButton.addEventListener('click', () => {
+            transcript.innerHTML = '';  // Clear all transcript content
+        });
 
         async function loadAudioDevices() {
             try {
