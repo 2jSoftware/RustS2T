@@ -39,8 +39,8 @@ cd rust_stt
 
 3. Build and run:
 ```bash
-cargo build --release
-cargo run --release
+cargo build 
+cargo run 
 ```
 
 4. Open `http://localhost:3030` in your browser
