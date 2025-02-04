@@ -1,4 +1,4 @@
-# Rust Speech-to-Text (STT) Application
+# Rust Speech-to-Text (S2T) Application
 
 A real-time speech recognition application built in Rust that uses the Vosk speech recognition engine and provides a web interface for interaction.
 
@@ -29,7 +29,7 @@ A real-time speech recognition application built in Rust that uses the Vosk spee
 1. Clone and prepare the project:
 ```bash
 git clone <repository-url>
-cd rust_stt
+cd RustS2T
 ```
 
 2. Set up Vosk model:
