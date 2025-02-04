@@ -58,7 +58,7 @@ cargo run --release
 
 ## Model Information
 
-The included Vosk model (vosk-model-small-en-us-0.15) has the following characteristics:
+The current used Vosk model (vosk-model-small-en-us-0.15) has the following characteristics:
 - Accuracy: 10.38 (tedlium test), 9.85 (librispeech test-clean)
 - Speed: 0.11xRT (desktop)
 - Latency: 0.15s (right context)
