@@ -14,29 +14,36 @@ A real-time speech recognition application built in Rust that uses the Vosk spee
 - Visual recording indicator
 - Offline speech recognition (no internet required)
 
+## Prerequisites
+
+1. Install Rust (2021 edition)
+2. Audio input device (microphone)
+3. Vosk library files:
+   - Download [vosk-win64-0.3.45.zip](https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-win64-0.3.45.zip)
+   - Extract the ZIP file
+   - Copy `libvosk.lib` and `vosk.dll` from the extracted folder to your project's root directory
+   - These files are required for the application to build and run properly
+
 ## Quick Start
 
-1. Install prerequisites:
-   - Rust (2021 edition)
-   - Audio input device (microphone)
-
-2. Clone and build:
+1. Clone and prepare the project:
 ```bash
 git clone <repository-url>
 cd rust_stt
-cargo build --release
 ```
 
-3. Download Vosk model:
-   - Get the small English model from [Vosk Models](https://alphacephei.com/vosk/models)
-   - Create a 'model' directory and extract to `model/vosk-model-small-en-us-0.15/`
+2. Set up Vosk model:
+   - Download the small English model from [Vosk Models](https://alphacephei.com/vosk/models)
+   - Create a 'model' directory in the project root
+   - Extract the model to `model/vosk-model-small-en-us-0.15/`
 
-4. Run the application:
+3. Build and run:
 ```bash
+cargo build --release
 cargo run --release
 ```
 
-5. Open `http://localhost:3030` in your browser
+4. Open `http://localhost:3030` in your browser
 
 ## Technical Details
 
@@ -63,6 +70,13 @@ The current used Vosk model (vosk-model-small-en-us-0.15) has the following char
 - Speed: 0.11xRT (desktop)
 - Latency: 0.15s (right context)
 - Copyright 2020 Alpha Cephei Inc
+
+## Troubleshooting
+
+If you encounter build errors related to `libvosk.lib`:
+1. Ensure you've downloaded and extracted vosk-win64-0.3.45.zip
+2. Verify that `libvosk.lib` and `vosk.dll` are present in your project's root directory
+3. If issues persist, try adding the directory containing these files to your system's PATH environment variable
 
 ## Contributing
 

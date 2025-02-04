@@ -24,3 +24,6 @@ Thumbs.db
 /vosk-win64-0.3.45/
 vosk-win64-0.3.45/
 vosk-win64*
+.h
+vosk_api.h
+*.h
