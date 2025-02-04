@@ -2,6 +2,9 @@
 
 A real-time speech recognition application built in Rust that uses the Vosk speech recognition engine and provides a web interface for interaction.
 
+![image](https://github.com/user-attachments/assets/6410d3c9-beae-422f-96e2-82323ed2127f)
+
+
 ## Features
 
 - Real-time speech-to-text transcription
