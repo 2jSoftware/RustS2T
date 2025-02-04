@@ -2,7 +2,6 @@ use tokio::sync::mpsc::Sender;
 // Import AudioFrame from the `audio` module we just created.
 use crate::audio::AudioFrame;
 // Import tracing macros for error and debug logging.
-use tracing::{error, debug};
 
 pub struct SpeechRecognizer {
     sender: Sender<String>,
